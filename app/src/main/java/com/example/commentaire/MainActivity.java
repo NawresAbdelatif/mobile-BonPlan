@@ -1,6 +1,7 @@
 package com.example.commentaire;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,20 +23,27 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity {
 
     ArrayList<Comment> listeCommentaires = new ArrayList<>();
-    ArrayList<Comment> displayedComments = new ArrayList<>(); // Pour les commentaires affichés
+    ArrayList<Comment> displayedComments = new ArrayList<>();
     CommentAdapter adapter;
     CommentDatabaseHelper databaseHelper;
 
-    // Liste des mots interdits
+
     private static final String[] BAD_WORDS = {"Merde", "Salaud", "Chier"};
+    private LibreTranslateApi libreTranslateApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        libreTranslateApi = ApiClient.getApi(); // Initialize translation API
+        CommentApi commentApi = ApiClientSpring.getRetrofitInstance().create(CommentApi.class);
 
         // Récupérer les éléments de l'interface
         Button commentButton = findViewById(R.id.comment_button);
@@ -88,26 +96,45 @@ public class MainActivity extends AppCompatActivity {
                     // Vérifier si le commentaire contient un mot interdit
                     if (containsBadWords(commentaire)) {
                         Toast.makeText(MainActivity.this, "Commentaire contient des mots interdits", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
+                    } else {
                         String currentDate = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
                         Comment newComment = new Comment(commentaire, currentDate);
-                        databaseHelper.addComment(newComment);
-                        listeCommentaires.add(newComment);
-                        updateDisplayedComments();
-                        adapter.notifyDataSetChanged();
-                        commentInput.setText("");
-                        commentsLabel.setVisibility(View.VISIBLE);
-                        commentsListView.setVisibility(View.VISIBLE);
-                        Toast.makeText(MainActivity.this, "Commentaire ajouté avec la date !", Toast.LENGTH_SHORT).show();
-                    }
-                }
 
-                else {
+                        // Appeler l'API pour ajouter le commentaire
+                        commentApi.addComment(newComment).enqueue(new Callback<Comment>() {
+                            @Override
+                            public void onResponse(Call<Comment> call, Response<Comment> response) {
+                                if (response.isSuccessful()) {
+                                    // Ajouter le commentaire à la base de données locale
+                                    databaseHelper.addComment(response.body());  // Enregistrer dans SQLite
+                                    listeCommentaires.add(response.body());
+                                    updateDisplayedComments();
+                                    adapter.notifyDataSetChanged();
+                                    commentInput.setText("");
+                                    commentsLabel.setVisibility(View.VISIBLE);
+                                    commentsListView.setVisibility(View.VISIBLE);
+                                    Toast.makeText(MainActivity.this, "Commentaire ajouté avec succès !", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    // Gérer l'échec de la requête
+                                    Toast.makeText(MainActivity.this, "Erreur lors de l'ajout du commentaire", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<Comment> call, Throwable t) {
+                                Log.e("API Error", "Erreur réseau", t);
+                                Toast.makeText(MainActivity.this, "Erreur réseau", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                } else {
+                    // Si le commentaire est vide, afficher un message d'erreur
                     Toast.makeText(MainActivity.this, "Veuillez écrire un commentaire", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
+
 
         viewMoreButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,6 +146,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    private void translateText(final String text, String sourceLang, String targetLang) {
+        // Appel à l'API de traduction
+        libreTranslateApi.translate(text, sourceLang, targetLang).enqueue(new Callback<TranslationResponse>() {
+            @Override
+            public void onResponse(Call<TranslationResponse> call, Response<TranslationResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String translatedText = response.body().getTranslatedText();
+                    Log.d("Translation", "Traduction réussie: " + translatedText);  // Log pour débogage
+                    // Sauvegarder le texte traduit dans la base de données
+                    String currentDate = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
+                    Comment newComment = new Comment(translatedText, currentDate);
+                    databaseHelper.addComment(newComment);
+                    listeCommentaires.add(newComment);
+                    updateDisplayedComments();
+                    adapter.notifyDataSetChanged();
+                    Toast.makeText(MainActivity.this, "Commentaire ajouté avec la date et traduit !", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("Translation", "Erreur de traduction");  // Log en cas d'erreur
+                    Toast.makeText(MainActivity.this, "Erreur de traduction", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TranslationResponse> call, Throwable t) {
+                Log.e("Translation", "Échec de la traduction: " + t.getMessage());  // Log de l'erreur
+                Toast.makeText(MainActivity.this, "Échec de la traduction: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 
     private void updateDisplayedComments() {
         // Trier les commentaires par le nombre de likes

@@ -3,9 +3,9 @@ package com.example.commentaire;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class RetrofitClient {
-    private static Retrofit retrofit;
-    private static final String BASE_URL = "https://api.twinword.com/api/v6/text/sentiment/";
+public class SentimentAnalysisApiClient {
+    private static final String BASE_URL = "https://aylien.com/";
+    private static Retrofit retrofit = null;
 
     public static Retrofit getClient() {
         if (retrofit == null) {
@@ -17,3 +17,4 @@ public class RetrofitClient {
         return retrofit;
     }
 }
+
