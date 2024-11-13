@@ -18,7 +18,7 @@
         android:id="@+id/bon_plan_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bon Plan: Escape Game"
+        android:text="Deal: Escape Game"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="#4A148C"
@@ -29,7 +29,7 @@
         android:id="@+id/bon_plan_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Profitez d'une session d'escape game à tarif réduit dans l'établissement 'Mystery Room', valable tous les samedis après-midi."
+        android:text="Enjoy a discounted escape game session at 'Mystery Room', available every Saturday afternoon."
         android:textSize="16sp"
         android:textColor="#4A148C"
         android:layout_marginBottom="24dp" />
