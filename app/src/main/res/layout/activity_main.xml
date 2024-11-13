@@ -11,14 +11,14 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/bonplan" />
+        android:src="@drawable/escape_game" />
 
     <!-- Titre du bon plan avec un design en mauve -->
     <TextView
         android:id="@+id/bon_plan_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bon Plan: Dîner au restaurant"
+        android:text="Bon Plan: Escape Game"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="#4A148C"
@@ -29,7 +29,7 @@
         android:id="@+id/bon_plan_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Profitez d'un dîner à moitié prix au restaurant 'Le Gourmet', valable tous les vendredis soir."
+        android:text="Profitez d'une session d'escape game à tarif réduit dans l'établissement 'Mystery Room', valable tous les samedis après-midi."
         android:textSize="16sp"
         android:textColor="#4A148C"
         android:layout_marginBottom="24dp" />
