@@ -29,7 +29,7 @@
         android:id="@+id/bon_plan_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enjoy a discounted escape game session at 'Mystery Room', available every Saturday afternoon."
+        android:text="Enjoy a discounted escape game session at 'Mystery Room', available every Saturday afternoon.Welcomee !"
         android:textSize="16sp"
         android:textColor="#4A148C"
         android:layout_marginBottom="24dp" />
